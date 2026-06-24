@@ -167,7 +167,9 @@ class TokenSynth(nn.Module):
             logit = self.forward(tokens[:, i:i+1], use_cache=True)[:, -1, :]
 
         # Process output tokens
-        audio_tokens = tokens[:, midi_len+1:i, 1:]
+        # Prevent 1-token loss when the loop terminates without breaking
+        end_idx = i if (next_token == 0).all() else i + 1
+        audio_tokens = tokens[:, midi_len+1:end_idx, 1:]
         return utils.post_process_audio_tokens(audio_tokens)
     
     def forward(self, x, clap_embedding=None, use_cache=False):
